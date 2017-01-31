@@ -30,7 +30,7 @@ k.on('CLIENT',function(fields){
           mac: fields.mac,
           firsttime: fields.firsttime,
           lasttime: fields.lasttime,
-	  signal: fields.signaldbm,
+	  signal: fields.signal_dbm,
         };
    }
 });
