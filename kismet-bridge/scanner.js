@@ -1,7 +1,7 @@
 var Kismet = require('./lib/kismet.js')
 var http = require('http');
 
-var timeoutValue = 5*1000;
+var timeoutValue = 60;
 
 var k = new Kismet()
 
@@ -12,8 +12,9 @@ timeout = function(){
 	var keys = Object.keys(clients);
 	for (var i = keys.length-1; i >= 0; i--){
 		var key = keys[i];
+		//console.log('now = ' + now/1000 + ' lasttime = ' + clients[key].lasttime + " difference = " +  (now/1000 - clients[key].lasttime));
 		if (now/1000 - clients[key].lasttime > timeoutValue){
-			console.log('client ' + JSON.stringify(clients[key]) + ' disappeared');
+			console.log('client ' + clients[key].mac + ' disappeared');
 			delete clients[key];
 		}	
 	}
