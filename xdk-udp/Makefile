@@ -9,7 +9,7 @@ BCDS_BASE_DIR ?= ../../..
 
 # Macro to define Start-up method. change this macro to "CUSTOM_STARTUP" to have custom start-up.
 export BCDS_SYSTEM_STARTUP_METHOD = DEFAULT_STARTUP
-export BCDS_APP_NAME = SendDataOverUdp
+export BCDS_APP_NAME = xdk-udp
 export BCDS_APP_DIR = $(CURDIR)
 export BCDS_APP_SOURCE_DIR = $(BCDS_APP_DIR)/source
 
