@@ -14,7 +14,7 @@
 #include "PTD_portDriver_ih.h"
 #include "Sensors.h"
 
-#define AKU_SENSITIVITY_VOLT   10
+#define AKU_SENSITIVITY_VOLT    1
 #define AKU_SENSITIVITY_DB    -38
 #define AKU_PASCALTODBSPL      94
 #define AKU_SENSORGAIN          1
@@ -251,9 +251,8 @@ void readNoiseSensor(uint8_t* noiseDbSpl) {
 #endif
 
 #ifdef NOISE_SENSOR_ACTIVATED
-	Retcode_T noiseSensorError = (Retcode_T)RETCODE_FAILURE;
 	uint32_t sensorData = 0;
-	uint32_t sensorDataDb = 0;
+	double sensorDataDb = 0.0;
 	uint8_t sensorDataDbSpl = 0;
 
 	/* noiseSensorError = AKU_getSensorData(&sensorData); */
@@ -266,25 +265,22 @@ void readNoiseSensor(uint8_t* noiseDbSpl) {
 
 	ADC_pollSingleData(&result);
 
+	printf("ADC raw value: %lu\n\r", result.data);
+
 	sensorData = (unsigned long) ADC_scaleAdcValue(&result);
 
 	printf("ADC Acoustic Voltage: %lu mV\n\r", sensorData);
 
-	if (noiseSensorError == RETCODE_OK)
-	{
-		/* Converts data from mV to dBSPL*/
-		sensorDataDb = (uint32_t) (20 * (log10(sensorData / AKU_SENSITIVITY_VOLT)));
+	/* Converts data from mV to dBSPL*/
+	sensorDataDb = (20 * (log10((double)sensorData / AKU_SENSITIVITY_VOLT)));
 
-		sensorDataDbSpl = sensorDataDb + AKU_SENSITIVITY_DB + AKU_PASCALTODBSPL - AKU_SENSORGAIN;
-		/* print the sensor data */
-		printf("sensor data :%d dBSPL\n\r", sensorDataDbSpl);
-		memcpy(noiseDbSpl, &sensorDataDbSpl, sizeof(uint8_t));
-	}
-	else
-	{
-		printf("AKU_getSensorData failed! \n");
-		printSensorError(noiseSensorError);
-	}
+	sensorDataDbSpl = (uint32_t)sensorDataDb + AKU_SENSITIVITY_DB + AKU_PASCALTODBSPL - AKU_SENSORGAIN;
+
+
+	/* print the sensor data */
+	printf("sensor data :%d dBSPL, %f, l\n\r", sensorDataDbSpl, sensorDataDb, sensorData);
+	memcpy(noiseDbSpl, &sensorDataDbSpl, sizeof(uint8_t));
+
 #endif
 }
 
