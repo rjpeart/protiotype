@@ -1,5 +1,8 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
+const http = require('http');
+
+var values = {};
 
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`);
@@ -13,46 +16,57 @@ server.on('message', (msg, rinfo) => {
 
   console.log(`length: ${len}`);
 
-  var i = 1;
-  var accel_x = msg.readInt32LE(1);
-  var accel_y = msg.readInt32LE(5);
-  var accel_z = msg.readInt32LE(9);
+  var accel = {};
+  accel["x"] = msg.readInt32LE(1);
+  accel["y"] = msg.readInt32LE(5);
+  accel["z"] = msg.readInt32LE(9);
+  values["accel"] = accel;
 
-  console.log(`accel x = ${accel_x}, y = ${accel_y}, z = ${accel_z}`);
+  console.log(`accel x = ${accel.x}, y = ${accel.y}, z = ${accel.z}`);
 
-  var gyro_x = msg.readInt32LE(13);
-  var gyro_y = msg.readInt32LE(17);
-  var gyro_z = msg.readInt32LE(21);
+  var gyro = {};
+  gyro["x"] = msg.readInt32LE(13);
+  gyro["y"] = msg.readInt32LE(17);
+  gyro["z"] = msg.readInt32LE(21);
+  values["gyro"] = gyro;
 
-  console.log(`gyro x = ${gyro_x}, y = ${gyro_y}, z = ${gyro_z}`);
+  console.log(`gyro x = ${gyro.x}, y = ${gyro.y}, z = ${gyro.z}`);
 
   var lux = msg.readUInt32LE(25);
+  values["lux"] = lux;
 
   console.log(`lux = ${lux}`);
 
   var noise = msg.readUInt8(29);
+  values["noise"] = noise;
 
   console.log(`noise = ${noise}`);
 
-  var mag_x = msg.readInt32LE(30);
-  var mag_y = msg.readInt32LE(34);
-  var mag_z = msg.readInt32LE(38);
+  var mag = {};
+  mag["x"] = msg.readInt32LE(30);
+  mag["y"] = msg.readInt32LE(34);
+  mag["z"] = msg.readInt32LE(38);
+  values["mag"] = mag;
 
-  console.log(`mag x = ${mag_x}, y = ${mag_y}, z = ${mag_z}`);
+  console.log(`mag x = ${mag.x}, y = ${mag.y}, z = ${mag.z}`);
 
   var res = msg.readInt16LE(42);
+  values["resistance"] = res;
 
   console.log(`resistance = ${res}`);
 
   var pressure = msg.readUInt32LE(44);
+  values["pressure"] = pressure;
 
   console.log(`pressure = ${pressure}`);
 
   var temperature = msg.readInt32LE(48);
+  values["temperature"] = temperature;
 
   console.log(`temperature = ${temperature}`);
 
   var humidity = msg.readUInt32LE(52);
+  values["humidity"] = humidity;
 
   console.log(`humidity = ${humidity}`);
 });
@@ -63,3 +77,8 @@ server.on('listening', () => {
 });
 
 server.bind(6666);
+
+http.createServer(function (req, res) {
+	res.writeHead(200, {'Content-Type': 'application/json'});
+	res.end(JSON.stringify(values));
+}).listen(9616);
