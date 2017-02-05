@@ -14,11 +14,6 @@
 #include "PTD_portDriver_ih.h"
 #include "Sensors.h"
 
-#define AKU_SENSITIVITY_VOLT   10
-#define AKU_SENSITIVITY_DB    -38
-#define AKU_PASCALTODBSPL      94
-#define AKU_SENSORGAIN          1
-
 static Accelerometer_HandlePtr_T accelSensor; /**< structure variable to store accelerator sensor handle*/
 
 static Gyroscope_HandlePtr_T gyroSensor; /** structure variable to store gyro sensor handle */
@@ -244,17 +239,13 @@ void noiseSensorInit() {
 #endif
 }
 
-void readNoiseSensor(uint8_t* noiseDbSpl) {
+void readNoiseSensor(uint32_t* noiseRaw) {
 
 #ifndef NOISE_SENSOR_ACTIVATED
 	(void) noiseDbSpl;
 #endif
 
 #ifdef NOISE_SENSOR_ACTIVATED
-	Retcode_T noiseSensorError = (Retcode_T)RETCODE_FAILURE;
-	uint32_t sensorData = 0;
-	uint32_t sensorDataDb = 0;
-	uint8_t sensorDataDbSpl = 0;
 
 	/* noiseSensorError = AKU_getSensorData(&sensorData); */
 	ADC_singleAcq_t result = ADC_SINGLE_ACQ_DEFAULT;
@@ -266,25 +257,12 @@ void readNoiseSensor(uint8_t* noiseDbSpl) {
 
 	ADC_pollSingleData(&result);
 
-	sensorData = (unsigned long) ADC_scaleAdcValue(&result);
+	//printf("ADC raw value: %lu\n\r", result.data);
 
-	printf("ADC Acoustic Voltage: %lu mV\n\r", sensorData);
+	*noiseRaw = ADC_scaleAdcValue(&result);
 
-	if (noiseSensorError == RETCODE_OK)
-	{
-		/* Converts data from mV to dBSPL*/
-		sensorDataDb = (uint32_t) (20 * (log10(sensorData / AKU_SENSITIVITY_VOLT)));
+	//printf("ADC Acoustic Voltage: %lu mV\n\r", *noiseRaw);
 
-		sensorDataDbSpl = sensorDataDb + AKU_SENSITIVITY_DB + AKU_PASCALTODBSPL - AKU_SENSORGAIN;
-		/* print the sensor data */
-		printf("sensor data :%d dBSPL\n\r", sensorDataDbSpl);
-		memcpy(noiseDbSpl, &sensorDataDbSpl, sizeof(uint8_t));
-	}
-	else
-	{
-		printf("AKU_getSensorData failed! \n");
-		printSensorError(noiseSensorError);
-	}
 #endif
 }
 
@@ -326,9 +304,9 @@ void readMagnetometerSensor(Magnetometer_XyzData_T* magData) {
 	} else {
 #ifdef DEBUG_LOGGING
 		/*print magnetometer sensor data on serialport */
-		printf("Magnetometer micro tesla data :\n\rx =%d\n\ry= %d\n\rz =%d\n\r",
+		printf("Magnetometer micro tesla data :\n\rx = %d\n\ry = %d\n\rz = %d\n\r",
 				(int)magData->xAxisData, (int)magData->yAxisData, (int)magData->zAxisData);
-		printf("Magnetometer sensor data resistance: %d \n\4", (int)magData->resistance );
+		printf("Magnetometer sensor data resistance: %d \n\r", (int)magData->resistance );
 #endif
 	}
 
@@ -357,7 +335,7 @@ void readEnvironmentSensor(Environmental_Data_T* value) {
 	if (RETCODE_OK == environmentSensorError) {
 #ifdef DEBUG_LOGGING
 		/*Environment data on serialport */
-		printf("Environmental Conversion Data :\n =%ld Pa\n\rt =%ld mDeg\n\rh =%ld %%rh\n\r",
+		printf("Environmental Conversion Data :\n\rp = %ld Pa\n\rt = %ld mDeg\n\rh = %ld %%rh\n\r",
 				(long int) value->pressure, (long int) value->temperature, (long int) value->humidity);
 #endif
 	} else {

@@ -8,6 +8,7 @@
 
 /* system header files */
 #include <stdio.h>
+#include <math.h>
 /* additional interface header files */
 #include "simplelink.h"
 #include "BCDS_Basics.h"
@@ -30,28 +31,46 @@
 /* constant definitions ***************************************************** */
 
 #define BUFFER_SIZE        UINT8_C(60)
+#define NOISE_PERIOD1      25
+#define NOISE_PERIOD2      40
 
 /* local variables ********************************************************** */
 
 static Accelerometer_XyzData_T accelData;
 static Gyroscope_XyzData_T gyroData;
 static uint32_t milliLuxData;
-static uint8_t noiseDbSpl;
 static Magnetometer_XyzData_T magData;
 static Environmental_Data_T environmentData;
+
+static uint8_t  noiseDbSpl;
+
+static uint8_t  noisePeriod1Cnt;
+static uint8_t  noisePeriod2Cnt;
+static uint8_t  noisePeriodCnt;
+
+static uint32_t noiseRawAvg1[NOISE_PERIOD1] = { 0 };
+static uint32_t noiseRawAvg2[NOISE_PERIOD2] = { 0 };
+static uint32_t noiseRawAveraged[PERIOD] = { 0 };
 
 /**
  * This buffer holds the data to be sent to server via UDP
  * */
 static uint8_t bsdBuffer_mau[BUFFER_SIZE] = { (uint8_t) ZERO };
+
 /**
  * Timer handle for connecting to wifi and obtaining the IP address
  */
 xTimerHandle wifiConnectTimerHandle_gdt = NULL;
+
 /**
  * Timer handle for periodically sending data over wifi
  */
 xTimerHandle wifiSendTimerHandle = NULL;
+
+/**
+ * Timer handle for noise sampling
+ */
+xTimerHandle noiseSampleTimerHandle = NULL;
 
 /* global variables ********************************************************* */
 
@@ -61,6 +80,7 @@ xTimerHandle wifiSendTimerHandle = NULL;
 
 /* local functions ********************************************************** */
 
+static void sampleNoiseSensor(xTimerHandle xTimer);
 
 /**
  *  @brief
@@ -98,6 +118,7 @@ void init(void)
     /* create timer task*/
     wifiConnectTimerHandle_gdt = xTimerCreate((char * const ) "wifiConnect", Ticks, TIMER_AUTORELOAD_OFF, NULL, wifiConnectGetIP);
     wifiSendTimerHandle = xTimerCreate((char * const ) "wifiSend", Ticks, TIMER_AUTORELOAD_ON, NULL, wifiSend);
+    noiseSampleTimerHandle = xTimerCreate((char * const ) "noiseSample", 1, TIMER_AUTORELOAD_ON, NULL, sampleNoiseSensor);
 
     if ((wifiConnectTimerHandle_gdt != NULL) && (wifiSendTimerHandle != NULL))
     {
@@ -127,6 +148,76 @@ void appInitSystem(xTimerHandle xTimer)
     init();
 }
 
+static void sampleNoiseSensor(xTimerHandle xTimer) {
+	BCDS_UNUSED(xTimer);
+
+	readNoiseSensor(&noiseRawAvg1[noisePeriod1Cnt]);
+    //noiseDbSpl
+
+	if (noisePeriod1Cnt > 0)
+	{
+		noisePeriod1Cnt--;
+	}
+	else
+	{
+		uint32_t noiseAvg = 0;
+		noisePeriod1Cnt = NOISE_PERIOD1-1;
+		for (int i = 0; i < NOISE_PERIOD1; i++)
+		{
+			noiseAvg += noiseRawAvg1[i];
+		}
+		noiseAvg = noiseAvg / NOISE_PERIOD2;
+		noiseRawAvg2[noisePeriod2Cnt] = noiseAvg;
+		if (noisePeriod2Cnt > 0)
+		{
+			noisePeriod2Cnt--;
+		}
+		else
+		{
+			noiseAvg = 0;
+			for (int i = 0; i < NOISE_PERIOD2; i++)
+			{
+				noiseAvg += noiseRawAvg2[i];
+			}
+			noiseAvg = noiseAvg / NOISE_PERIOD2;
+
+			noiseRawAveraged[noisePeriodCnt] = noiseAvg;
+			noisePeriod2Cnt = NOISE_PERIOD2-1;
+			if (noisePeriodCnt > 0)
+			{
+				noisePeriodCnt--;
+			}
+			else
+			{
+				noisePeriodCnt = PERIOD-1;
+			}
+		}
+	}
+
+}
+
+static void readNoiseSensorData(uint8_t *noiseLevel) {
+
+	uint32_t sensorData = 0;
+	double sensorDataDb = 0.0;
+	uint8_t sensorDataDbSpl = 0;
+
+	for (int i = 0; i < PERIOD; i++)
+	{
+		sensorData += noiseRawAveraged[i];
+	}
+	sensorData = sensorData / PERIOD;
+
+	/* Converts data from mV to dBSPL*/
+	sensorDataDb = (20 * (log10((double)sensorData / AKU_SENSITIVITY_VOLT)));
+
+	sensorDataDbSpl = (uint32_t)sensorDataDb + AKU_SENSITIVITY_DB + AKU_PASCALTODBSPL - AKU_SENSORGAIN;
+
+	/* print the sensor data */
+	printf("sensor data :%d dBSPL, %f, %l\n\r", sensorDataDbSpl, sensorDataDb, sensorData);
+	memcpy(noiseLevel, &sensorDataDbSpl, sizeof(uint8_t));
+}
+
 static void sampleAndStoreSensorData(void) {
 
 	readAccelerometerData(&accelData);
@@ -142,8 +233,7 @@ static void sampleAndStoreSensorData(void) {
 	readLightSensor(&milliLuxData);
 	//milliLuxData
 
-	readNoiseSensor(&noiseDbSpl);
-	//noiseDbSpl
+	readNoiseSensorData(&noiseDbSpl);
 
 	readMagnetometerSensor(&magData);
 	//magData.xAxisData
@@ -155,6 +245,7 @@ static void sampleAndStoreSensorData(void) {
 	//environmentData.pressure
 	//environmentData.temperature
 	//environmentData.humidity
+
 }
 
 
@@ -365,6 +456,18 @@ static void wifiConnectGetIP(xTimerHandle xTimer)
     {
         assert(false);
     }
+
+    /* Initialize the counters for the noise sampling */
+	noisePeriod1Cnt = NOISE_PERIOD1-1;
+	noisePeriod2Cnt = NOISE_PERIOD2-1;
+	noisePeriodCnt = PERIOD-1;
+
+    /* Start sampling the noise sensor */
+    if (xTimerStart(noiseSampleTimerHandle, TIMERBLOCKTIME) != pdTRUE)
+    {
+        assert(false);
+    }
+
 }
 
 /* global functions ********************************************************* */
