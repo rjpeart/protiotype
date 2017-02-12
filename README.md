@@ -45,3 +45,15 @@ Node.js server which currently collects the data from `xdk-bridge` and `kismet-b
 1. `/environment`: data captured by the XDK
 2. `/clients`: data from kismet on the Raspberry Pi
 3. `/clients/events`: events from kismet indicating the appearence or disappearence of a new client
+
+### nginx configuration
+nginx is used as a web server serving up the front-end pages. The webserver is setup to forward requests for the `/data` directory to the consolidator removing the data portion of the url.
+
+    location /data {
+        rewrite /data/(.*) /$1  break;
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host      $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+
