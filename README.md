@@ -26,13 +26,17 @@ The current data in the same format can be read from the same endpoint using the
 
 ### kismet-bridge
 Node.js kismet client that pushes the following two pieces of information to the consolidator:
+
 1. List of currently present clients (/clients endpoint)
+
     {"E0:8E:3C:03:59:FF":{"mac":"E0:8E:3C:03:59:FF","firsttime":1486903784808,"signal":"-78","manufacturer":"AztechEl","lasttime":1486904127299}
     "00:09:0F:F4:2D:50":{"mac":"00:09:0F:F4:2D:50","firsttime":1486904059246,"signal":"-87","manufacturer":"Fortinet","lasttime":1486904115717},
     "E0:8E:3C:17:5B:37":{"mac":"E0:8E:3C:17:5B:37","firsttime":1486904060283,"signal":"-89","manufacturer":"AztechEl","lasttime":1486904100821},
     "3C:B6:B7:D2:8E:69":{"mac":"3C:B6:B7:D2:8E:69","firsttime":1486904062400,"signal":"-88","manufacturer":"VivoMobi","lasttime":1486904134742},
     "40:4D:7F:9F:89:60":{"mac":"40:4D:7F:9F:89:60","firsttime":1486904154939,"signal":"-87","manufacturer":"Apple","lasttime":1486904154939}}
+
 2. Events when a new client appears or disappears (/clients/events endpoint)
+
     Format TBD
 
 ### consolidator
