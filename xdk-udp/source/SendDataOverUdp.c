@@ -424,7 +424,8 @@ static void wifiConnectGetIP(xTimerHandle xTimer)
         return;
     }
 
-    if (RETCODE_OK == WlanConnect_WPA(connectSSID, connectPassPhrase, NULL))
+    //if (RETCODE_OK == WlanConnect_WPA(connectSSID, connectPassPhrase, NULL))
+    if (RETCODE_OK == WlanConnect_Open(connectSSID, NULL))
     {
         ReturnValue = NetworkConfig_GetIpSettings(&myIpSettings);
         if (RETCODE_OK == ReturnValue)
