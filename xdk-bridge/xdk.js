@@ -4,6 +4,36 @@ const http = require('http');
 
 var values = {};
 
+postData = function(data) {
+
+  var str_data = JSON.stringify(data);
+
+  var post_options = {
+    host: '192.168.0.8',
+    port: '8000',
+    path: '/environment',
+    method: 'POST', 
+    headers: {
+      'Content-Type': 'text/json',
+      'Content-Length': Buffer.byteLength(str_data)
+    }
+  } 
+
+  var post_req = http.request(post_options, function(res) {
+    res.setEncoding('utf8');
+    res.on('data', function(chunk) {
+      console.log('Response: ' + chunk);
+    });
+  });
+
+  post_req.on('error', (err) => {
+	console.log('POST error');
+    });
+
+  post_req.write(str_data);
+  post_req.end();
+}
+
 server.on('error', (err) => {
   console.log(`server error:\n${err.stack}`);
   server.close();
@@ -55,12 +85,12 @@ server.on('message', (msg, rinfo) => {
 
   console.log(`resistance = ${res}`);
 
-  var pressure = msg.readUInt32LE(44);
+  var pressure = msg.readUInt32LE(44) / 100;
   values["pressure"] = pressure;
 
   console.log(`pressure = ${pressure}`);
 
-  var temperature = msg.readInt32LE(48);
+  var temperature = msg.readInt32LE(48) / 1000;
   values["temperature"] = temperature;
 
   console.log(`temperature = ${temperature}`);
@@ -69,6 +99,10 @@ server.on('message', (msg, rinfo) => {
   values["humidity"] = humidity;
 
   console.log(`humidity = ${humidity}`);
+
+  console.log('values = ' + JSON.stringify(values));
+
+  postData(values);
 });
 
 server.on('listening', () => {

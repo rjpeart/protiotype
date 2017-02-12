@@ -5,9 +5,42 @@ var url = require('url');
 var timeoutValue = 60*1000;  // timeout set to 60s
 var taskPeriod = 2000;
 
+var postPeriod = 5;
+
 var k = new Kismet()
 
 var clients = {};
+
+postData = function(data) {
+	var str_data = JSON.stringify(data);
+
+	var post_options = {
+		host: '192.168.0.8',
+		port: '8000',
+		path: '/clients',
+		method: 'POST',
+		headers: {
+			'Content-Type': 'text/json',
+			'Content-Length': Buffer.byteLength(str_data)
+		}
+	};
+
+	var post_req = http.request(post_options, function(res) {
+		res.setEncoding('utf8');
+		res.on('data', function(chunk) {
+			console.log('Response: ' + chunk);
+		});
+	});
+
+	post_req.on('error', (err) => {
+		console.log("Error : " + err);
+	});
+
+	post_req.write(str_data);
+	post_req.end();
+
+}
+
 
 periodicTask = function(){
 	var now = Date.now()
@@ -19,6 +52,15 @@ periodicTask = function(){
 			console.log('client ' + clients[key].mac + ' disappeared, stayed ' + ((clients[key].lasttime - clients[key].firsttime)/1000) + ' seconds');
 			delete clients[key];
 		}	
+	}
+	if (postPeriod > 0)
+	{
+		postPeriod--;
+	}
+	else
+	{
+		postData(clients);
+		postPeriod = 5;
 	}
 }
 
