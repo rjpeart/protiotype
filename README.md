@@ -29,11 +29,23 @@ Node.js kismet client that pushes the following two pieces of information to the
 
 1. List of currently present clients (/clients endpoint)
 
-    {"E0:8E:3C:03:59:FF":{"mac":"E0:8E:3C:03:59:FF","firsttime":1486903784808,"signal":"-78","manufacturer":"AztechEl","lasttime":1486904127299}
-    "00:09:0F:F4:2D:50":{"mac":"00:09:0F:F4:2D:50","firsttime":1486904059246,"signal":"-87","manufacturer":"Fortinet","lasttime":1486904115717},
-    "E0:8E:3C:17:5B:37":{"mac":"E0:8E:3C:17:5B:37","firsttime":1486904060283,"signal":"-89","manufacturer":"AztechEl","lasttime":1486904100821},
-    "3C:B6:B7:D2:8E:69":{"mac":"3C:B6:B7:D2:8E:69","firsttime":1486904062400,"signal":"-88","manufacturer":"VivoMobi","lasttime":1486904134742},
-    "40:4D:7F:9F:89:60":{"mac":"40:4D:7F:9F:89:60","firsttime":1486904154939,"signal":"-87","manufacturer":"Apple","lasttime":1486904154939}}
+    [{"mac":"C8:F7:33:12:0F:CA","firsttime":1486910495917,"signal":"-86","manufacturer":"IntelCor","lasttime":1486910503392},
+     {"mac":"FC:F1:36:8D:8E:51","firsttime":1486910495918,"signal":"-87","manufacturer":"Unknown","lasttime":1486910495918},
+     {"mac":"CC:08:8D:0D:54:A8","firsttime":1486910495919,"signal":"-86","manufacturer":"Apple","lasttime":1486910495919},
+     {"mac":"FC:F1:36:8C:E0:27","firsttime":1486910495920,"signal":"-87","manufacturer":"Unknown","lasttime":1486910503394},
+     {"mac":"B4:75:0E:1D:65:DA","firsttime":1486910497919,"signal":"-88","manufacturer":"BelkinIn","lasttime":1486910497919},
+     {"mac":"48:02:2A:0B:D7:FA","firsttime":1486910501135,"signal":"-89","manufacturer":"B-LinkEl","lasttime":1486910501135},
+     {"mac":"90:18:7C:DF:34:E9","firsttime":1486910501136,"signal":"-48","manufacturer":"SamsungE","lasttime":1486910506726},
+     {"mac":"44:04:44:CB:77:1D","firsttime":1486910502307,"signal":"-91","manufacturer":"Guangdon","lasttime":1486910502307},
+     {"mac":"E0:8E:3C:03:0F:EF","firsttime":1486910502310,"signal":"-90","manufacturer":"AztechEl","lasttime":1486910502310},
+     {"mac":"DC:0C:5C:80:D3:11","firsttime":1486910503391,"signal":"-88","manufacturer":"Apple","lasttime":1486910503391},
+     {"mac":"48:88:CA:14:2F:17","firsttime":1486910503392,"signal":"-87","manufacturer":"Motorola","lasttime":1486910503392},
+     {"mac":"FC:F1:36:8D:8E:55","firsttime":1486910503393,"signal":"-88","manufacturer":"Unknown","lasttime":1486910511025},
+     {"mac":"14:BB:6E:D5:2C:18","firsttime":1486910503394,"signal":"-87","manufacturer":"SamsungE","lasttime":1486910503394},
+     {"mac":"E8:2A:EA:AA:38:E5","firsttime":1486910507836,"signal":"-39","manufacturer":"IntelCor","lasttime":1486910509926},
+     {"mac":"48:1D:70:EA:DF:1F","firsttime":1486910511023,"signal":"-84","manufacturer":"CiscoSpv","lasttime":1486910511023},
+     {"mac":"2A:6C:07:32:53:FF","firsttime":1486910514125,"signal":"-83","manufacturer":"Unknown","lasttime":1486910514125}]
+
 
 2. Events when a new client appears or disappears (/clients/events endpoint)
 

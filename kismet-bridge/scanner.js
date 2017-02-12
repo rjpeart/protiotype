@@ -42,6 +42,16 @@ postData = function(data) {
 }
 
 
+
+clientArray = function(clients) {
+	var client_arr = [];
+	var i = 0;
+	for (var key in clients) {
+		client_arr[i++] = clients[key];
+	}
+	return client_arr;
+}
+
 periodicTask = function(){
 	var now = Date.now()
 	var keys = Object.keys(clients);
@@ -59,7 +69,8 @@ periodicTask = function(){
 	}
 	else
 	{
-		postData(clients);
+		var client_arr = clientArray(clients);
+		postData(client_arr);
 		postPeriod = 5;
 	}
 }
@@ -118,7 +129,8 @@ http.createServer(function (req, res) {
 	else
 	{
 		res.writeHead(200, {'Content-Type': 'application/json'});
-		res.end(JSON.stringify(clients));
+		var client_arr = clientArray(clients);
+		res.end(JSON.stringify(client_arr));
 	}
 }).listen(9615);
 

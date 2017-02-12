@@ -9,8 +9,8 @@
 		<div ng-app="protiotype" ng-controller="clientsCtrl"> 
 
 			<ul>
-				<li ng-repeat="(mac, client) in clients">
-    					{{ mac + ', ' + client.firsttime }}
+				<li ng-repeat="client in clients">
+    					{{ client.mac + ', ' + client.firsttime }}
 				</li>
 			</ul>
 

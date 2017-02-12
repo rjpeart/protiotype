@@ -27,7 +27,7 @@ postData = function(data) {
   });
 
   post_req.on('error', (err) => {
-	console.log('POST error');
+	console.log(err);
     });
 
   post_req.write(str_data);
