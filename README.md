@@ -41,6 +41,7 @@ Node.js kismet client that pushes the following two pieces of information to the
 
 ### consolidator
 Node.js server which currently collects the data from `xdk-bridge` and `kismet-bridge` and presents the data through the following endpoints
+
 1. `/environment`: data captured by the XDK
 2. `/clients`: data from kismet on the Raspberry Pi
 3. `/clients/events`: events from kismet indicating the appearence or disappearence of a new client
