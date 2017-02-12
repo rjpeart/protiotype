@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<title>Protiotype</title>
+		<script src="js/angular.min.js"></script>
+	</head>
+	<body>
+		<h1>Welcome to Protiotype</h1>
+
+		<div ng-app="protiotype" ng-controller="clientsCtrl"> 
+
+			<ul>
+				<li ng-repeat="(mac, client) in clients">
+    					{{ mac + ', ' + client.firsttime }}
+				</li>
+			</ul>
+
+		</div>
+
+		<script>
+			var app = angular.module('protiotype', []);
+			app.controller('clientsCtrl', function($scope, $http) {
+    				$http.get("data/clients").then(function(response) {
+        				$scope.clients = response.data;
+    				});
+			});
+		</script>
+	</body>
+</html>
