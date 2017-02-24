@@ -73,6 +73,8 @@ server.on('message', (msg, rinfo) => {
 
 	var len = msg.readUInt8(0);
 
+	values["timestamp"] = Date.now();
+
 	console.log(`length: ${len}`);
 
 	var accel = {};
