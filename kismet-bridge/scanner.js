@@ -32,6 +32,17 @@ mqttClient.on('error', function() {
 	use_mqtt = false;
 });
 
+createEvent = function(client, eventText) {
+	var event = {};
+	event["event"] = eventText;
+	event["mac"] = client.mac;
+	event["firsttime"]  = client.firsttime;
+	event["lasttime"] = client.lasttime;
+	event["signal"] = client.signal;
+	event["manufacturer"] = client.manufacturer;
+	return event;
+}
+
 postData = function(data, topic) {
 	var str_data = JSON.stringify(data);
 
@@ -84,6 +95,8 @@ periodicTask = function(){
 	for (var i = keys.length-1; i >= 0; i--){
 		var key = keys[i];
 		if (now - clients[key].lasttime > timeoutValue){
+			var event = createEvent(clients[key], "remove");
+			postData(event, "/clients/event");
 			console.log('client ' + clients[key].mac + ' disappeared, stayed ' + ((clients[key].lasttime - clients[key].firsttime)/1000) + ' seconds');
 			delete clients[key];
 		}	
@@ -126,6 +139,8 @@ k.on('CLIENT',function(fields){
 				signal: fields.signal_dbm,
 				manufacturer: fields.manuf,
 			};
+			var event = createEvent(clients[fields.mac], "add");
+			postData(event, "/clients/event");
 		}
 		clients[fields.mac].lasttime = now;
 	}
